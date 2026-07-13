@@ -1,63 +1,35 @@
 package com.Scala3Essentials
 
-case class Customer(name: String)
-case class Address(city: String)
-case class Payment(cardLast4: String)
+import scala.annotation.tailrec
 
-val customers = Map(
-  "ord1" -> Customer("Dharani"),
-  "ord2" -> Customer("Alice")
-)
-
-val addresses = Map(
-  "ord1" -> Address("Chennai"),
-  "ord3" -> Address("Mumbai")
-)
-
-val payments = Map(
-  "ord1" -> Payment("4242"),
-  "ord2" -> Payment("1234")
-)
-
-case class OrderConfirmation(customerName: String, city: String, cardLast4: String)
-
-def confirmOrder(orderId: String): Option[OrderConfirmation] = {
-  for {
-    customer <- customers.get(orderId)
-    address <- addresses.get(orderId)
-    payment <- payments.get(orderId)
-  } yield OrderConfirmation(customer.name, address.city, payment.cardLast4)
+abstract class MyList[T] {
+  def head: T = throw new NoSuchElementException("head on empty list")
+  def tail: MyList[T] = throw new NoSuchElementException("tail on empty list")
 }
 
-def confirmOrderFlatMap(orderId: String): Option[OrderConfirmation] = {
-  customers.get(orderId).flatMap(customer =>
-    addresses.get(orderId).flatMap(address =>
-      payments.get(orderId).map(payment => OrderConfirmation(customer.name, address.city, payment.cardLast4))))
-}
+case class EmptyList[T]() extends MyList[T]
+case class NonEmptyList[T](override val head: T, override val tail: MyList[T]) extends MyList[T]
 
-def describeOrder(orderId: String): String = {
-  confirmOrder(orderId) match {
-    case Some(orderData : OrderConfirmation) =>
-      s"${orderData.customerName}'s order ships to ${orderData.city}, paid with card ending ${orderData.cardLast4}"
-    case None => s"Order $orderId is incomplete"
+object MyList {
+  def unapplySeq[T](myList: MyList[T]) : Option[Seq[T]] = {
+    @tailrec
+    def unapplySeqHelper(ml: MyList[T], acc: Option[Seq[T]]) : Option[Seq[T]] = {
+      if(ml == EmptyList[T]()) Option(acc.getOrElse(Seq.empty).reverse)
+      else unapplySeqHelper(ml.tail, Option(ml.head +: acc.getOrElse(Seq.empty)))
+    }
+    unapplySeqHelper(myList, Option.empty)
   }
 }
-
 
 object Playground {
   def main(args: Array[String]): Unit = {
 
-    println(confirmOrder("ord1"))
-    println(confirmOrder("ord2"))
-    println(confirmOrder("ord3"))
+    val myListInt : MyList[Int] = NonEmptyList(1, NonEmptyList(2, NonEmptyList(3, EmptyList())))
+    println(MyList.unapplySeq(myListInt))
 
-    println(confirmOrderFlatMap("ord1"))
-    println(confirmOrderFlatMap("ord2"))
-    println(confirmOrderFlatMap("ord3"))
-
-    println(describeOrder("ord1"))
-    println(describeOrder("ord2"))
-    println(describeOrder("ord3"))
-
+    val myListPatternMatching = myListInt match {
+      case MyList(1,2,_*) => s"the first 2 elements in myList are 1 and 2"
+    }
+    println(myListPatternMatching)
   }
 }

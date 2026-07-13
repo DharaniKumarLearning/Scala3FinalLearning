@@ -87,8 +87,6 @@ object ThreadsPractice {
       thread2.join()
       if (bankAccount.amount != 20000) println(s"Alert!!! race condition for $x and amount ${bankAccount.amount}")
     }
-    
-    
 
     println(s"main thread done ${Thread.currentThread().getName}")
   }

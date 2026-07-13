@@ -120,7 +120,7 @@ object Learning1_DarkSugars {
     println(methodWithVarArgs(1, 2, 3))
 
     val aCollection = List(1,2,3,4)
-    println(methodWithVarArgs(aCollection*))
+    println(methodWithVarArgs(aCollection*))  // syntax to pass a collection to variable arguments parameter
 
   }
 }
