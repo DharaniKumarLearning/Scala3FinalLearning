@@ -1,0 +1,29 @@
+MultiThreading
+--------------
+
+Multitasking is divided into two types Process based multitasking and thread based multitasking.
+Executing several tasks simultaneously where each task is separate independent process such type of multitasking is
+called Process based multitasking.
+Process based multitasking best suited at Operating system level not at program level.
+
+Executing several tasks simultaneously where each task is a separate independent process of the same program such
+type of multitasking is called Thread based multitasking. Each independent part is called Thread.
+The main objective of multitasking is to reduce response time of the system and to improve performance.
+
+The main important application areas of multithreading are
+
+    1. To develop multi-media graphics
+    2. To develop animations
+    3. To develop video games
+    4. To develop webservers and application servers etc.,
+
+A Thread is a separate flow of execution of a program.
+We can define a thread in 2 ways.
+
+    1. by extending Thread class
+    2. by implementing Runnable interface
+
+Thread scheduler is part of the JVM it is responsible to schedule threads that is if multiple threads are waiting to
+get chance of execution the order in which threads will be executed is decided by Thread scheduler.
+We can't except exact algorithm followed by Thread scheduler it is varied from JVM to JVM hence we can't expect thread
+execution order and exact output

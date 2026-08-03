@@ -2,85 +2,44 @@ package com.AdvancedScala.practice
 
 import java.util.concurrent.{ExecutorService, Executors}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Random, Success}
-
+import scala.util.{Failure, Success}
 
 object Futures {
   def main(args: Array[String]): Unit = {
 
-    def meaningOfLife() : Int = {
-      println("This method sleeps for 1 second and then returns an Int")
-      Thread.sleep(1000)
-      42
-    }
+    val executors : ExecutorService = Executors.newFixedThreadPool(4)
+    given anExecutionContext : ExecutionContext = ExecutionContext.fromExecutorService(executors)
 
-    val executors: ExecutorService = Executors.newFixedThreadPool(4)
-    given executionContext : ExecutionContext = ExecutionContext.fromExecutorService(executors)
-    val meaningOfLifeFuture : Future[Int] = Future.apply(meaningOfLife())
+    def calculateMeaningOfLife() : Int = {println(s"${Thread.currentThread().getName} first method is running") ; Thread.sleep(1000) ; throw new RuntimeException("No Int for you")}
+    def doubleTheNumber(x : Int) : Int = {println(s"${Thread.currentThread().getName} second method is running") ; Thread.sleep(1000) ; x * 2}
 
-    meaningOfLifeFuture.onComplete {
-      case Success(value) => println(s"The future succeeded and it returned the value $value")
-      case Failure(ex) => println(s"The future failed with exception $ex")
-    }
+    val aFuture : Future[Int] = Future.apply(calculateMeaningOfLife())(anExecutionContext)
 
-    case class Profile(id : String, name : String) {
-      def sendMessage(anotherProfile : Profile, message : String) : Unit =
-        println(s"${this.id} sending message to ${anotherProfile.id} : $message")
-    }
-
-    object SocialNetwork {
-      val names : Map[String, String] = Map("Dharani" -> "Kavya", "Shiv" -> "Swetha", "Saurajit" -> "Shruthi")
-      val friends : Map[String,String] = Map("Dharani" -> "Shiv")
-
-      def fetchProfile(id: String) : Future[Profile] = Future {
-        println("This future will return a Profile based on the id passed")
-        Thread.sleep(new Random().nextInt(300))
-        Profile(id, names(id))
-      }
-
-      def fetchBestFriend(profile: Profile) : Future[Profile] = Future {
-        println("This future will return the best friend of the profile passed")
-        Thread.sleep(new Random().nextInt(400))
-        val bestFriend = friends(profile.id)
-        Profile(bestFriend, names(bestFriend))
-      }
-    }
-
-    def sendMessageToBestFriend(accountId: String, message : String) : Unit = {
-      val personProfile : Future[Profile] = SocialNetwork.fetchProfile(accountId)
-      personProfile.onComplete {
-        case Success(profile) =>
-          val bestFriendProfileFuture : Future[Profile] = SocialNetwork.fetchBestFriend(profile)
-          bestFriendProfileFuture.onComplete {
-            case Success(bestFriendProfile) => profile.sendMessage(bestFriendProfile, message)
-            case Failure(ex1) => println(s"Exception occurred swallowing it $ex1")
-          }
-        case Failure(ex) => println(s"Exception occurred swallowing it $ex")
-      }
-    }
-
-    def sendMessageToBestFriend_v2(accountId: String, message: String) : Unit = {
-      val personProfile : Future[Profile] = SocialNetwork.fetchProfile(accountId)
-      val action : Future[Unit] = personProfile.flatMap { profile =>
-        SocialNetwork.fetchBestFriend(profile).map { bestFriendProfile =>
-          profile.sendMessage(bestFriendProfile, message)
+    aFuture.onComplete {
+      case Success(value) =>
+        println(s"${Thread.currentThread().getName} the future completed and the value is $value")
+        val anotherFuture = Future(doubleTheNumber(value))
+        anotherFuture.onComplete {
+          case Success(finalValue) => println(s"${Thread.currentThread().getName} the second future completed and the value is $finalValue")
+          case Failure(exception) => println(s"${Thread.currentThread().getName} second future failed with exception $exception")
         }
-      }
+      case Failure(ex) => println(s"${Thread.currentThread().getName} Future failed with exception $ex")
     }
 
-    def sendMessageToBestFriend_v3(accountId: String, message : String) : Unit = {
-      val action = for {
-        personProfile <- SocialNetwork.fetchProfile(accountId)
-        bestFriendProfile <- SocialNetwork.fetchBestFriend(personProfile)
-      } yield personProfile.sendMessage(bestFriendProfile, message)
-    }
+    val finalResult = aFuture.flatMap(value => Future(doubleTheNumber(value)))
+    val anotherFinalResult = for {
+      value <- aFuture
+      finalValue <- Future(doubleTheNumber(value))
+    } yield finalValue
 
-//    sendMessageToBestFriend_v2("Shiv", "How are you dude?")
-
-    val dharaniProfileFuture = SocialNetwork.fetchProfile("Gibberish").fallbackTo {SocialNetwork.fetchProfile("Shiv")}
-    val dharaniValue = dharaniProfileFuture.map(x => x.name)
-    Thread.sleep(1000)
-    println(dharaniValue)
+    val futureMap = aFuture.map(x => x * 3).recover(x => 0)
+    val futureMap2 = aFuture.map(x => x * 3).recoverWith(x => Future(45))
+    println("Main thread continuing further after calling futures and their callbacks")
+    Thread.sleep(5000)
+    println(s"finalResult = ${finalResult.value}")
+    println(s"anotherFinalResult = ${anotherFinalResult.value}")
+    println(s"futureMap result = ${futureMap.value}")
+    println(s"futureMap2 result = ${futureMap2.value}")
     executors.shutdown()
 
   }

@@ -1,93 +1,49 @@
 package com.AdvancedScala.practice
 
-import java.util.concurrent.Executors
-import scala.util.Random
+class SimpleContainer {
+  private var value : Int = 0
+  def isEmpty : Boolean = value == 0
+  def set(x : Int) : Unit = value = x
+  def get : Int = {
+    val result = value
+    value = 0
+    result
+  }
+}
 
 object ThreadsPractice {
+
+  private def producerConsumerProblemV1() : Unit = {
+    val simpleContainer = new SimpleContainer
+    val consumer = new Thread(() => {
+      simpleContainer.synchronized {
+        if(simpleContainer.isEmpty) {
+          println("I am waiting for producer to send value")
+          simpleContainer.wait()
+          println("I got notified by the producer that the value is set hence I am reading it now")
+        }
+      }
+      println(s"I got the value and it is ${simpleContainer.get}")
+    })
+
+    val producer = new Thread(() => {
+      Thread.sleep(500)
+      simpleContainer.synchronized {
+        simpleContainer.set(42)
+        println("I have set the value for container notifying it now")
+        simpleContainer.notify()
+      }
+
+      println("producer produced the value to simple container")
+    })
+
+    producer.start()
+    consumer.start()
+    producer.join()
+    consumer.join()
+  }
+
   def main(args: Array[String]): Unit = {
-    println(s"main thread starting ${Thread.currentThread().getName}")
-
-    val aRunnable : Runnable = new Runnable {
-      override def run(): Unit = {
-        println(s"This thread will sleep for 2 seconds and the thread name is ${Thread.currentThread().getName}")
-        Thread.sleep(1000)
-        println(s"This thread is done ${Thread.currentThread().getName}")
-      }
-    }
-    val aThread = new Thread(aRunnable)
-    aThread.start()
-    aThread.join()
-
-    val helloThread = new Thread(() => (1 to 100).foreach(_ => println("Hello")))
-    val byeThread = new Thread(() => (1 to 100).foreach(_ => println("Bye")))
-    helloThread.start()
-    byeThread.start()
-    helloThread.join()
-    byeThread.join()
-
-    val threadPool = Executors.newFixedThreadPool(4)
-    (1 to 6).foreach(x => threadPool.execute(() => {
-      println(s"${Thread.currentThread().getName} sleeping for 1 second with value of x $x")
-      Thread.sleep(1000)
-      println(s"${Thread.currentThread().getName} is completed with value of x $x")
-    }))
-
-    threadPool.shutdown()
-    threadPool.awaitTermination(Long.MaxValue, java.util.concurrent.TimeUnit.SECONDS)
-
-    def runInParallel() : Unit = {
-      var someVar = 0
-      val someThread1 = new Thread(() => {Thread.sleep(1) ; someVar = 1})
-      val someThread2 = new Thread(() => {Thread.sleep(1) ; someVar = 2})
-      someThread1.start()
-      someThread2.start()
-      someThread1.join()
-      someThread2.join()
-      println(s"After threads run the value of someVar is $someVar")
-    }
-
-    runInParallel()
-
-    case class BankAccount(var amount : Int)
-    def buy(bankAccount: BankAccount, thing : String, price : Int) : Unit = {
-      val existing = bankAccount.amount
-      val random = new Random()
-      Thread.sleep(if(random.nextBoolean()) 1 else 2)
-      bankAccount.amount = existing - price
-    }
-
-    (1 to 10).foreach { x =>
-      val bankAccount = BankAccount(50000)
-      val thread1 = new Thread(() => buy(bankAccount, "shoe", 10000))
-      val thread2 = new Thread(() => buy(bankAccount, "iPhone", 20000))
-      thread1.start()
-      thread2.start()
-      thread1.join()
-      thread2.join()
-      if(bankAccount.amount != 20000) println(s"race condition occurred for x $x and bank balance is ${bankAccount.amount}")
-    }
-
-    def buySafe(bankAccount: BankAccount, thing : String, price : Int) : Unit = {
-      bankAccount.synchronized {
-        val existing = bankAccount.amount
-        val random = new Random()
-        Thread.sleep(if (random.nextBoolean()) 1 else 2)
-        bankAccount.amount = existing - price
-        println(s"${Thread.currentThread().getName} the bank balance is ${bankAccount.amount}")
-      }
-    }
-
-    (1 to 10).foreach { x =>
-      val bankAccount = BankAccount(50000)
-      val thread1 = new Thread(() => buySafe(bankAccount, "shoe", 10000))
-      val thread2 = new Thread(() => buySafe(bankAccount, "iPhone", 20000))
-      thread1.start()
-      thread2.start()
-      thread1.join()
-      thread2.join()
-      if (bankAccount.amount != 20000) println(s"Alert!!! race condition for $x and amount ${bankAccount.amount}")
-    }
-
-    println(s"main thread done ${Thread.currentThread().getName}")
+    producerConsumerProblemV1()
   }
 }

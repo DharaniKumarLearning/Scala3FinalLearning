@@ -157,7 +157,7 @@ object ProducerConsumerV4 {
             both consumers are waiting
             producer calls notify, awakens one consumer.
             consumer dequeues, calls notify awakens another consumer -- due to scheduling mechanism
-            the other consumer awakens and it will crash because the buffer is empty as we are trying to get an element out
+            the other consumer awakens, and it will crash because the buffer is empty as we are trying to get an element out
           */
 
           while(buffer.isEmpty) {
