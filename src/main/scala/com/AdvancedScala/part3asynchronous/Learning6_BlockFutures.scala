@@ -3,9 +3,8 @@ package com.AdvancedScala.part3asynchronous
 import java.util.concurrent.{ExecutorService, Executors}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.*
-import scala.util.{Success,Failure}
 
-object Learning5_BlockFutures {
+object Learning6_BlockFutures {
   def main(args: Array[String]): Unit = {
 
     val executors : ExecutorService = Executors.newFixedThreadPool(4)
@@ -33,7 +32,7 @@ object Learning5_BlockFutures {
           2. Create transaction
           3. Wait for transaction to finish
         */
-        val transactionFuture = for {
+        val transactionFuture : Future[String] = for {
           user <- fetchUser(username)
           transaction <- createTransaction(user, merchantName, price)
         } yield transaction.status

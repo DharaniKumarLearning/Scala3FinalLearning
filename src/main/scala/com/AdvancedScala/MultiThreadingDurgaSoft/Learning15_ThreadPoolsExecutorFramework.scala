@@ -7,7 +7,7 @@ object Learning15_ThreadPoolsExecutorFramework {
 
     /**
      * Creating a new thread for every job may create performance and memory problems
-     * To overcome thi we should go for thread pool.
+     * To overcome this we should go for thread pool.
      * Thread pool is a pool of already created threads that are ready to do our job
      * java 1.5 introduces thread pool framework to implement thread pools
      * Thread pool is also known as executor framework

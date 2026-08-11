@@ -143,82 +143,13 @@ object ProducerConsumerV3 {
   }
 }
 
-object ProducerConsumerV4 {
-
-  class Consumer(id : Int, buffer : mutable.Queue[Int], containerCapacity : Int) extends Thread {
-    override def run(): Unit = {
-      val random = new Random(System.nanoTime())
-
-      while(true) {
-        buffer.synchronized {
-          /*
-            one producer, two consumers
-            producer produces one value in the buffer
-            both consumers are waiting
-            producer calls notify, awakens one consumer.
-            consumer dequeues, calls notify awakens another consumer -- due to scheduling mechanism
-            the other consumer awakens, and it will crash because the buffer is empty as we are trying to get an element out
-          */
-
-          while(buffer.isEmpty) {
-            println(s"[consumer$id] buffer empty waiting")
-            buffer.wait()
-          }
-
-          val newValue = buffer.dequeue()
-          buffer.notifyAll()
-          println(s"[consumer$id] consumed $newValue")
-        }
-        Thread.sleep(random.nextInt(500))
-      }
-
-    }
-  }
-
-  class Producer(id : Int, buffer : mutable.Queue[Int], containerCapacity : Int) extends Thread {
-    override def run(): Unit = {
-      val random = new Random(System.nanoTime())
-      var currentCount = 0
-
-      while(true) {
-        buffer.synchronized {
-          while(buffer.size == containerCapacity) {
-            println(s"[producer $id] buffer is full..waiting")
-            buffer.wait()
-          }
-
-          // there is space in the buffer
-          println(s"[producer $id] producer producing $currentCount")
-          buffer.enqueue(currentCount)
-
-          // wakeup a consumer
-          buffer.notifyAll()
-          currentCount += 1
-
-        }
-
-        Thread.sleep(random.nextInt(500))
-      }
-    }
-  }
-
-  def start(nProducers : Int, nConsumers : Int, containerCapacity : Int) : Unit = {
-    val buffer : mutable.Queue[Int] = new mutable.Queue[Int]
-    val producers = (1 to nProducers).map(id => new Producer(id, buffer, containerCapacity))
-    val consumers = (1 to nConsumers).map(id => new Consumer(id, buffer, containerCapacity))
-    producers.foreach(_.start())
-    consumers.foreach(_.start())
-
-  }
-}
 
 object Learning3_JVMThreadCommunication {
   def main(args: Array[String]): Unit = {
 
 //    ProducerConsumerV1.start()
 //    ProducerConsumerV2.start()
-//    ProducerConsumerV3.start(1)
-    ProducerConsumerV4.start(1,2,5)
+    ProducerConsumerV3.start(1)
 
   }
 }

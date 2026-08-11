@@ -4,7 +4,7 @@ import java.util.concurrent.{ExecutorService, Executors}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Success, Failure}
 
-object Learning6_Promises {
+object Learning7_Promises {
   def main(args: Array[String]): Unit = {
 
     val executors : ExecutorService = Executors.newFixedThreadPool(4)

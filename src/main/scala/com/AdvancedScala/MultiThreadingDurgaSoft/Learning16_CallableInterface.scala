@@ -13,16 +13,18 @@ object Learning16_CallableInterface {
      *  Future i.e. future object can be used to retrieve the result from callable job
      */
 
-    class MyCallable(num: Int) extends Callable[Int] {
-      override def call(): Int = (1 to num).sum
-    }
 
-    val service : ExecutorService = Executors.newFixedThreadPool(4)
-
-    List(10,20,30,40,50,60).foreach { num =>
-      val f = service.submit(MyCallable(num))
-      println(s"The sum of first $num numbers is ${f.get()}")
+    val service: ExecutorService = Executors.newFixedThreadPool(4)
+    try {
+      class MyCallable(num: Int) extends Callable[Int] {
+        override def call(): Int = { Thread.sleep(500) ; (1 to num).sum }
+      }
+      List(10, 20, 30, 40, 50, 60).foreach { num =>
+        val f = service.submit(new MyCallable(num))
+        println(s"The sum of first $num numbers is ${f.get()}")
+      }
+    } finally {
+      service.shutdown()
     }
-    service.shutdown()
   }
 }

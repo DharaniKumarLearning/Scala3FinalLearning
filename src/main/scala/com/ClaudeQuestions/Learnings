@@ -1,0 +1,48 @@
+We can use require(Boolean expression) to evaluate the arguments passed to a method which will throw
+java.lang.IllegalArgumentException if the arguments doesn't satisfy the condition we passed.
+
+
+def isValidNumber(s: String): Boolean = {
+    @tailrec
+    def allDigits(i: Int): Boolean =
+      if (i >= s.length) true
+      else if (s(i) >= '0' && s(i) <= '9') allDigits(i + 1)
+      else false
+
+    val start = if (s.startsWith("+") || s.startsWith("-")) 1 else 0
+    if (s.length <= start) false
+    else allDigits(start)
+}
+
+val raw = List("12", "abc", "-45", "", "7", "3.5", "+9")
+val parseWhole : PartialFunction[String, Int] = { case n if isValidNumber(n) => n.toInt }
+
+raw.map(parseWhole) -- map method demands a total function it applies to every element in the collection and the first
+element outside the domain blows up and causes MatchError
+
+raw.collect(parseWhole) -- on the other hand collect asks the PartialFunction if it is defined for this input,
+if it is true applies the function else silently drops it. Filtering and traversal in one line
+
+raw.flatMap(_.toIntOption) -- this does the same thing as collect with PartialFunction we wrote
+    toIntOption returns None if it is not an Int and flatMap silently drops it
+
+When we are writing hashCode for an instance of a class make sure the class fields are immutable as long as the object
+lives in hash based collection
+
+val xs = List(1, 2, 3, 4, 5)
+xs.view.map(<some function> -- In this line nothing gets computed a view just stores the recipe, not the results
+    once we perform some action that's when it triggers the computation until the action is satisfied
+    The downside the chain gets recomputed on every traversal
+
+xs.to(LazyList).map(<some function>) -- LazyList is exactly same as view but the results are cached instead of
+    recomputing if we perform the same computation the value that is cached is returned if your action is
+    different then all the elements required to compute that action are stored
+    The downside for very large actions this can cause memory issues as the elements gets cached in memory
+
+If the function you pass returns an Option too, use flatMap, not map. map nests, flatMap flattens
+
+Either type need to revise
+toRight, toIntOption, toLongOption, toLeft, Left, Right, partitionMap all are important methods
+flatMap on Option type is very important
+
+if Dog is a subtype of Animal, then List[Dog] is a subtype of List[Animal]. That's called covariance

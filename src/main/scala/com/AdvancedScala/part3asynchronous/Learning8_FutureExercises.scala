@@ -4,7 +4,7 @@ import java.util.concurrent.{ExecutorService, Executors}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Random, Try}
 
-object Learning7_FutureExercises {
+object Learning8_FutureExercises {
   def main(args: Array[String]): Unit = {
 
     /**
