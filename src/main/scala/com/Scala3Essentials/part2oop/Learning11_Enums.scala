@@ -38,7 +38,7 @@ object Learning11_Enums {
     println(PermissionWithBits.fromBits(4))
 
     // standard API of enums
-    println(somePermissions.ordinal) // ordinal shows the position where the instance of the enum was declared starts with 0
+    println(permissionWithBits.ordinal) // ordinal shows the position where the instance of the enum was declared starts with 0
     println(PermissionWithBits.values.toList)  // array of all possible values of the enum
     println(Permissions.valueOf("EXECUTE"))  // returns the case defined in enum which matches with the one we sent
 
