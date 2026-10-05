@@ -8,3 +8,7 @@ lazy val root = (project in file("."))
   )
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3"
+
+libraryDependencies ++= Seq(
+   "org.bouncycastle" % "bcpg-jdk18on"   % "1.84"
+ )

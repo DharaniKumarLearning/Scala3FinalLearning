@@ -122,5 +122,9 @@ object Learning1_DarkSugars {
     val aCollection = List(1,2,3,4)
     println(methodWithVarArgs(aCollection*))  // syntax to pass a collection to variable arguments parameter
 
+    class Matrix {
+
+    }
+
   }
 }

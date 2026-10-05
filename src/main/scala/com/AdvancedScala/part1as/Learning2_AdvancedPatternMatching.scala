@@ -18,6 +18,8 @@ object Learning2_AdvancedPatternMatching {
   def main(args: Array[String]): Unit = {
 
     val dharani = new Person("Dharani", 10)
+
+    // We can not perform pattern matching on normal classes like we do for case classes because normal classes do not have unapply method
     val dharaniPatternMatching = dharani match {
       case Person(n,a) => s"Hi there, I am $n with $a years old"
       case _ => s"The person is not old enough"
